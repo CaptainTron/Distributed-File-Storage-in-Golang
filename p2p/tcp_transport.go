@@ -10,8 +10,6 @@ import (
 type TCPPeer struct{
 	// conn is the underlying connection of peer
 	conn net.Conn
-
-
 	outbound bool
 }
 
@@ -25,6 +23,8 @@ func NewTCPPeer(conn net.Conn, outbound bool) *TCPPeer{
 type TCPTransport struct{
 	listenAddress string
 	listener  net.Listener
+	shakeHands HandshakeFunc
+	decoder Decoder
 
 	mu sync.RWMutex
 	peers map[net.Addr]Peer
@@ -32,6 +32,7 @@ type TCPTransport struct{
 
 func NewTCPTransport(listenAddr string) *TCPTransport{
 	return &TCPTransport{
+		shakeHands: NOPHandshakeFunc,
 		listenAddress: listenAddr,
 	}
 }
@@ -53,10 +54,28 @@ func (t *TCPTransport) startAcceptLoop (){
 		if err != nil {
 			fmt.Printf("TCP accept error : %s\n", err)
 		}
+
+		fmt.Printf("New Incoming Connection %+v\n", conn)
+
 		go t.handleConn(conn)
 	}
 }
 
+type Temp struct{}
 func (t *TCPTransport) handleConn(conn net.Conn){
-	fmt.Printf("%+v\n", conn)
+	peer := NewTCPPeer(conn, true)
+
+	if err:= t.shakeHands(peer); err!=nil{
+		
+	}
+
+	// Read Loop
+	
+	msg := &Temp{}
+	for {
+		if err := t.decoder.Decode(conn, msg); err!=nil{
+			fmt.Printf("TCP error %s\n", err)
+			continue;
+		}
+	}
 }
