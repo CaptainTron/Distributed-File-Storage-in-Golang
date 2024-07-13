@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"log"
 	"os"
 	"strings"
 )
 
-const defaultRootFolderName = "vaibhavrootfolder"
+const defaultRootFolderName = "vaibhav"
 
 func CASPathTransformFunc(key string) PathKey {
 	hash := sha1.Sum([]byte(key))
@@ -90,10 +90,7 @@ func (s *Store) Has(key string) bool {
 	PathKey := s.PathTransformFunc(key)
 	FullPathWithRoot := fmt.Sprintf("%s/%s", s.Root, PathKey.Fullpath())
 	_, err := os.Stat(FullPathWithRoot)
-	if err == fs.ErrNotExist {
-		return false
-	}
-	return true
+	return !errors.Is(err, os.ErrNotExist)
 }
 
 // Delete the file contents and its children
@@ -104,6 +101,9 @@ func (s *Store) Delete(key string) error {
 	}()
 	FirstPathNameWithRoot := fmt.Sprintf("%s/%s", s.Root, PathKey.FirstPathName())
 	return os.RemoveAll(FirstPathNameWithRoot)
+}
+func (s *Store) Write(key string, r io.Reader) error {
+	return s.writeStream(key, r)
 }
 
 func (s *Store) Read(key string) (io.Reader, error) {
