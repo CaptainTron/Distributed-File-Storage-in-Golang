@@ -86,6 +86,7 @@ func (p PathKey) FirstPathName() string {
 	return paths[0]
 }
 
+// Check whether key is present or not
 func (s *Store) Has(key string) bool {
 	PathKey := s.PathTransformFunc(key)
 	FullPathWithRoot := fmt.Sprintf("%s/%s", s.Root, PathKey.Fullpath())
@@ -102,7 +103,7 @@ func (s *Store) Delete(key string) error {
 	FirstPathNameWithRoot := fmt.Sprintf("%s/%s", s.Root, PathKey.FirstPathName())
 	return os.RemoveAll(FirstPathNameWithRoot)
 }
-func (s *Store) Write(key string, r io.Reader) error {
+func (s *Store) Write(key string, r io.Reader) (int64, error) {
 	return s.writeStream(key, r)
 }
 
@@ -123,26 +124,24 @@ func (s *Store) readStream(key string) (io.Reader, error) {
 	return os.Open(PathKeyWithRoot)
 }
 
-func (s *Store) writeStream(key string, r io.Reader) error {
+func (s *Store) writeStream(key string, r io.Reader) (int64, error) {
 	PathKey := s.PathTransformFunc(key)
 	pathnameWithRoot := fmt.Sprintf("%s/%s", s.Root, PathKey.Pathname)
 	if err := os.MkdirAll(pathnameWithRoot, os.ModePerm); err != nil {
-		return err
+		return 0, err
 	}
 
 	pathandFilenameWithRoot := fmt.Sprintf("%s/%s", s.Root, PathKey.Fullpath())
 
 	f, err := os.Create(pathandFilenameWithRoot)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer f.Close()
 
 	n, err := io.Copy(f, r)
 	if err != nil {
-		return err
+		return 0, err
 	}
-
-	log.Printf("written (%d) bytes to disk: %s", n, pathandFilenameWithRoot)
-	return nil
+	return n, nil
 }

@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"example/learn/p2p"
+	// "fmt"
+	// "io/ioutil"
 	"log"
 	"strings"
 	"time"
@@ -40,7 +42,20 @@ func main() {
 	go s2.Start()
 	time.Sleep(1 * time.Second)
 
-	data := bytes.NewReader([]byte("my big data file here!"))
-	s2.StoreData("myprivatedata", data)
+	key := "myprivatedata"
+
+	data := bytes.NewReader([]byte("Now, Stream of file is successfull and we can stream very large file"))
+	s2.Store(key, data)
+
+	// r, err := s2.Get(key)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// b, err := ioutil.ReadAll(r)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(string(b))
 	select {}
 }
+
