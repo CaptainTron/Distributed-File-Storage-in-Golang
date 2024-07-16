@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
@@ -107,21 +106,24 @@ func (s *Store) Write(key string, r io.Reader) (int64, error) {
 	return s.writeStream(key, r)
 }
 
-func (s *Store) Read(key string) (io.Reader, error) {
-	f, err := s.readStream(key)
-	if err != nil {
-		return nil, err
-	}
-
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, f)
-	return buf, err
+// Return the file directly: Without Streaming....
+func (s *Store) Read(key string) (int64, io.Reader, error) {
+	return s.readStream(key)
 }
 
-func (s *Store) readStream(key string) (io.Reader, error) {
+func (s *Store) readStream(key string) (int64, io.Reader, error) {
 	PathKey := s.PathTransformFunc(key)
 	PathKeyWithRoot := fmt.Sprintf("%s/%s", s.Root, PathKey.Fullpath())
-	return os.Open(PathKeyWithRoot)
+
+	file, err := os.Open(PathKeyWithRoot)
+	if err != nil {
+		return 0, nil, err
+	}
+	filestats, err := file.Stat()
+	if err != nil {
+		return 0, nil, err
+	}
+	return filestats.Size(), file, nil
 }
 
 func (s *Store) writeStream(key string, r io.Reader) (int64, error) {

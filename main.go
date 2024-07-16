@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bytes"
+	// "bytes"
 	"example/learn/p2p"
-	// "fmt"
-	// "io/ioutil"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"strings"
 	"time"
@@ -38,24 +38,22 @@ func main() {
 		log.Fatal(s1.Start())
 	}()
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 	go s2.Start()
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 
-	key := "myprivatedata"
+	key := "coolpicture.jpg"
 
-	data := bytes.NewReader([]byte("Now, Stream of file is successfull and we can stream very large file"))
-	s2.Store(key, data)
+	// data := bytes.NewReader([]byte("Big Data files Goes Here..."))
+	// s2.Store("coolpicture.jpg", data)
 
-	// r, err := s2.Get(key)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// b, err := ioutil.ReadAll(r)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(string(b))
-	select {}
+	r, err := s2.Get(key)
+	if err != nil {
+		log.Fatal(err)
+	}
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(b))
 }
-
