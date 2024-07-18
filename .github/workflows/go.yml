@@ -1,62 +1,29 @@
-name: Build and Publish Release
+# .github/workflows/release.yml
+name: Build and release Go Project
 
 on:
   push:
     branches:
-      - main  # You can change this to your default branch
+      - "main"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.22.3  # Use the Go version you need
+          go-version-file: "go.mod"
 
-      - name: Build
-        run: go build -v ./...
+      - name: Build project
+        run: go build .
 
-      - name: Archive the build output
-        uses: actions/upload-artifact@v2
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: build-output
-          path: ./ # Specify the path to the build output
-
-  release:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Download build output
-        uses: actions/download-artifact@v2
-        with:
-          name: build-output
-          path: ./ # Specify where to download the build output
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.sha }}
-          release_name: Release ${{ github.sha }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./  # Specify the path to the build output
-          asset_name: DistributedFileStorage  # Name your asset
-          asset_content_type: application/octet-stream
+          files: |
+            bin/server
+            # more file here...

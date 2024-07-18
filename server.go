@@ -73,7 +73,8 @@ func (s *FileServer) broadcast(msg *Message) error {
 
 	fmt.Printf("Starting BroadCast\n")
 	for _, peer := range s.peers {
-		peer.Send([]byte{p2p.IncomingStream})
+		// Send the message 
+		peer.Send([]byte{p2p.IncomingMessage})
 		if err := peer.Send(buf.Bytes()); err != nil {
 			return err
 		}
@@ -100,7 +101,7 @@ func (s *FileServer) Get(key string) (io.Reader, error) {
 		return nil, err
 	}
 
-	time.Sleep(time.Second * 2)
+	time.Sleep(time.Millisecond * 5)
 	// After receive from remote peer save into disk
 	for _, peer := range s.peers {
 		// First of all read the file size so we can limit the amount of bytes that we read
@@ -158,7 +159,6 @@ func (s *FileServer) Store(key string, r io.Reader) error {
 	// at end send stream message, and send the encrypted message to all peers
 	peers := []io.Writer{}
 	for _, peer := range s.peers {
-		fmt.Println("Peers----------> ", peer.RemoteAddr().String())
 		peers = append(peers, peer)
 	}
 	mw := io.MultiWriter(peers...)
@@ -167,7 +167,9 @@ func (s *FileServer) Store(key string, r io.Reader) error {
 	if err != nil {
 		return err
 	}
+
 	fmt.Printf("[%s] send and written (%d) bytes to disk\n", s.Transport.Addr(), n)
+
 	return nil
 }
 
@@ -259,7 +261,6 @@ func (s *FileServer) handleMessageGetFile(from string, msg MessageGetFile) error
 
 // StoreMessage [RemoteServer]
 func (s *FileServer) handleMessageStoreFile(from string, msg MessageStoreFile) error {
-
 	peer, ok := s.peers[from]
 	if !ok {
 		return fmt.Errorf("peer: [%s] not found in peer list", from)

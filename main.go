@@ -50,9 +50,9 @@ func main() {
 
 		// Delete the key in Current server
 		// to test the system
-		// if err := s2.store.Delete(s2.ID, key); err != nil {
-		// 	log.Fatal(err)
-		// }
+		if err := s2.store.Delete(s2.ID, key); err != nil {
+			log.Fatal(err)
+		}
 
 		// r, err := s2.Get(key)
 		// if err != nil {
@@ -64,6 +64,4 @@ func main() {
 		// }
 		// fmt.Println(string(b))
 	}
-
-	time.Sleep(time.Second * 5)
 }
