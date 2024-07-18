@@ -18,5 +18,5 @@ It covers TCP, peer to peer library, System Design, Low Level Programming and Ne
 
 
 ### High Level Diagram of Distributed File Storage Using Golang.
-> May change in upcoming updates
-![image](https://github.com/user-attachments/assets/e068d820-dc47-499a-b8bd-6c95aab2c875)
+![image](https://github.com/user-attachments/assets/7405a81a-bbed-44cd-a09e-0e3d443ba87f)
+
