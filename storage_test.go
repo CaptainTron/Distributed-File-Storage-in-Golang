@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"testing"
 )
@@ -10,6 +11,7 @@ import (
 func newStore() *Store {
 	opts := StoreOpts{
 		PathTransformFunc: CASPathTransformFunc,
+		ID:                "Vaibhav",
 	}
 	return NewStore(opts)
 }
@@ -38,11 +40,11 @@ func TestPathTransformFunc(t *testing.T) {
 
 func TestStore(t *testing.T) {
 	s := newStore()
-	//defer teardown(t, s);
+	defer teardown(t, s)
 
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 100; i++ {
 		key := fmt.Sprintf("foo_%d", i)
-		data := []byte("some jpg bytes")
+		data := []byte("Some Jpeg Bytes...")
 		if _, err := s.writeStream(key, bytes.NewReader(data)); err != nil {
 			t.Error(err)
 		}
@@ -60,14 +62,19 @@ func TestStore(t *testing.T) {
 		}
 		fmt.Println(string(b))
 
+		// Check if r implements Closer interface, if it is then Close it.
+		if closer, ok := r.(io.Closer); ok {
+			closer.Close()
+		}
+
 		// Delete the file and its folders
 		if err := s.Delete(key); err != nil {
 			t.Error(err)
 		}
 
 		// Check it exists or not
-		if ok := s.Has(key); !ok {
-			t.Errorf("expected to have key %s", key)
+		if ok := s.Has(key); ok {
+			t.Errorf("expected to NOT have key %s", key)
 		}
 	}
 }

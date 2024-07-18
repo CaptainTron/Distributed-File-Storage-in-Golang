@@ -2,6 +2,7 @@ package main
 
 import (
 	// "bytes"
+	"bytes"
 	"example/learn/p2p"
 	"fmt"
 	"io/ioutil"
@@ -20,6 +21,7 @@ func makeServer(listenAddr string, nodes ...string) *FileServer {
 	}
 	tcptransport := p2p.NewTCPTransport(tcptransportOpts)
 	FileServerOpts := FileServerOpts{
+		Encyption_key:     newEncryptKey(),
 		StorageRoot:       "dir_" + strings.TrimPrefix(listenAddr, ":"),
 		PathTransformFunc: CASPathTransformFunc,
 		Transport:         tcptransport,
@@ -44,8 +46,14 @@ func main() {
 
 	key := "coolpicture.jpg"
 
-	// data := bytes.NewReader([]byte("Big Data files Goes Here..."))
-	// s2.Store("coolpicture.jpg", data)
+	data := bytes.NewReader([]byte("Big Data files Goes Here..."))
+	s2.Store(key, data)
+
+	// Delete the key in Current server
+	// to test the system
+	if err := s2.store.Delete(key); err != nil {
+		log.Fatal(err)
+	}
 
 	r, err := s2.Get(key)
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 )
 
 type FileServerOpts struct {
+	Encyption_key     []byte // for encryptionMethod
 	StorageRoot       string
 	PathTransformFunc PathTransformFunc
 	Transport         p2p.Transport
@@ -55,17 +56,6 @@ type MessageGetFile struct {
 	Key string
 }
 
-// This will create a stream of data to be delievered to all the available
-// peers
-func (s *FileServer) stream(msg *Message) error {
-	peers := []io.Writer{}
-	for _, peer := range s.peers {
-		peers = append(peers, peer)
-	}
-	mw := io.MultiWriter(peers...)
-	return gob.NewEncoder(mw).Encode(msg)
-}
-
 // broadcast to all the available peers at once at the stream
 func (s *FileServer) broadcast(msg *Message) error {
 	buf := new(bytes.Buffer)
@@ -93,7 +83,7 @@ func (s *FileServer) Get(key string) (io.Reader, error) {
 	fmt.Printf("[%s] Don't have file (%s) locally, fetching from network\n", s.Transport.Addr(), key)
 	msg := Message{
 		Payload: MessageGetFile{
-			Key: key,
+			Key: hashkey(key),
 		},
 	}
 
@@ -109,11 +99,12 @@ func (s *FileServer) Get(key string) (io.Reader, error) {
 		var fileSize int64
 		binary.Read(peer, binary.LittleEndian, &fileSize)
 		// Storing into the disk after receiving from remote server...
-		n, err := s.store.Write(key, io.LimitReader(peer, fileSize))
+		n, err := s.store.WriteDecrypt(s.Encyption_key, key, io.LimitReader(peer, fileSize))
+		//n, err := s.store.Write(key, io.LimitReader(peer, fileSize))
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("[%s] Received %d bytes over the network from [%s]", s.Transport.Addr(), n, peer.RemoteAddr())
+		fmt.Printf("[%s] Received %d bytes over the network from [%s]", s.Transport.Addr(), n, peer.RemoteAddr())
 		peer.CloseStream()
 	}
 	_, r, err := s.store.Read(key)
@@ -137,8 +128,8 @@ func (s *FileServer) Store(key string, r io.Reader) error {
 	// Create message
 	msg := Message{
 		Payload: MessageStoreFile{
-			Key:  key,
-			Size: size,
+			Key:  hashkey(key),
+			Size: size + 16,
 		},
 	}
 
@@ -148,17 +139,28 @@ func (s *FileServer) Store(key string, r io.Reader) error {
 	}
 
 	fmt.Printf("Starting File upload\n")
-	time.Sleep(time.Second * 2)
+	time.Sleep(time.Second * 1)
 
-	// TODO: use a multiwriter here...
+	//Checkingupload := new(bytes.Buffer)
+
+	time.Sleep(time.Millisecond * 5)
+
+	// Sending the file to all the peers at once
+
+	// creating slice of writers, appending all the avaibable peers into it
+	// creating multiwriter mw that will write into all the peers at once
+	// at end send stream message, and send the encrypted message to all peers
+	peers := []io.Writer{}
 	for _, peer := range s.peers {
-		peer.Send([]byte{p2p.IncomingStream})
-		_, err := io.Copy(peer, fileBuffer)
-		if err != nil {
-			return err
-		}
+		peers = append(peers, peer)
 	}
-	fmt.Printf("Finished File upload\n")
+	mw := io.MultiWriter(peers...)
+	mw.Write([]byte{p2p.IncomingStream})
+	n, err := copyEncrypt(s.Encyption_key, fileBuffer, mw)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("[%s] send and written (%d) bytes to disk\n", s.Transport.Addr(), n)
 	return nil
 }
 
@@ -184,7 +186,7 @@ func (s *FileServer) loop() {
 	for {
 		select {
 		case rpc := <-s.Transport.Consume():
-			fmt.Println("Checking!!!")
+			fmt.Println("Incoming Message in loop....")
 			var msg Message
 			// Message will printed here
 			if err := gob.NewDecoder(bytes.NewReader(rpc.Payload)).Decode(&msg); err != nil {
@@ -222,7 +224,8 @@ func (s *FileServer) handleMessageGetFile(from string, msg MessageGetFile) error
 		return err
 	}
 
-
+	// Check if it is ending or not
+	// if reader is readcloser or not
 	if rc, ok := r.(io.ReadCloser); ok {
 		fmt.Println("Closing readcloser")
 		defer rc.Close()
@@ -272,7 +275,7 @@ func (s *FileServer) bootstrapNetwork() error {
 
 		// Start a new Connection in another goroutine
 		go func(addr string) {
-			log.Printf("Attempting to connect with remote server %s\n", addr)
+			log.Printf("[%s] Attempting to connect with remote server %s\n", s.Transport.Addr(), addr)
 			if err := s.Transport.Dial(addr); err != nil {
 				log.Println("dial error: ", err)
 			}
