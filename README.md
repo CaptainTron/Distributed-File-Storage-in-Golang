@@ -1,6 +1,6 @@
 ### Distributed File Storage Using Golang 
 A Scalable, Decentralized, Fully distributed, Content addressable file storage system using Golang that can handle and stream very large files.  
-It covers TCP, peer to peer library, System Design, Low Level Programming and Network protocols.  
+It covers Custom TCP peer-to-peer library, System architecture, and Network protocols.  
 
 > [!NOTE]
 >- I'll leave this repo for new comers who want to learn golang at it's peak. This is very good project if you want to learn golang by building complex systems, like this.
