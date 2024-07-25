@@ -1,22 +1,20 @@
 ### Distributed File Storage Using Golang 
-A Scalable, Decentralized, Fully distributed, Content addressable file storage system using Golang that can handle and stream very large files.  
-It covers Custom TCP peer-to-peer library, System architecture, and Network protocols.  
+A Scalable, Decentralized, Fully distributed, Content addressable file storage system using Golang that can handle and stream very large files.
 
 > [!NOTE]
->- I'll leave this repo for new comers who want to learn golang at it's peak. This is very good project if you want to learn golang by building complex systems, like this.
->- I can add more and more features, like automatic peer discovery, automatic file recovery, Loadbalancers (to fetch files more fast as compared to peers), and more but it would take months and there will be still more features to add, so as beginner it is perfect to start with these, although the goal of this project is to explore and learn how such systems acutally work under hood.
->- New Features and PR are welcomed.
+>- This repository is ideal for those who want to learn Golang at its peak. It offers a great opportunity to explore and understand how such systems work under the hood.
+>- While more features could be added, such as automatic peer discovery, automatic file recovery, and load balancers for faster file retrieval, this project is already a perfect starting point for beginners. Keep in mind that the goal is to learn and explore, and there will always be more features to add.
+>- New features and pull requests are welcome.
 
-### Features :- 
-- Concurrency:     Utilize goroutines for handling multiple operations efficiently.
-- Scalability:     Design for horizontal scaling.  
-- Fault Tolerance: Implement data replication and failover mechanisms.
-- Security:        Ensure data encryption and secure communications.
-- Performance:     Optimize for low latency and high throughput.
+### Features:
+- Concurrency: Utilize goroutines to efficiently handle multiple operations.
+- Scalability: Designed for horizontal scaling.
+- Fault Tolerance: Implements data replication and failover mechanisms.
+- Security: Ensures data encryption and secure communications.
+- Performance: Optimized for low latency and high throughput.
 
-
-
-
-### High Level Diagram of Distributed File Storage Using Golang.
+### High-Level Diagram of Distributed File Storage Using Golang:
 ![image](https://github.com/user-attachments/assets/7405a81a-bbed-44cd-a09e-0e3d443ba87f)
+
+Feel free to explore and contribute to this project!
 

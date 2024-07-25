@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"example/learn/p2p"
 	"fmt"
-	// "io/ioutil"
+	"io/ioutil"
 	"log"
 	"strings"
 	"time"
@@ -54,14 +54,14 @@ func main() {
 			log.Fatal(err)
 		}
 
-		// r, err := s2.Get(key)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-		// b, err := ioutil.ReadAll(r)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-		// fmt.Println(string(b))
+		r, err := s2.Get(key)
+		if err != nil {
+			log.Fatal(err)
+		}
+		b, err := ioutil.ReadAll(r)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(string(b))
 	}
 }
