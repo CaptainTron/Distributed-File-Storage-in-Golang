@@ -1,4 +1,4 @@
-### Distributed File Storage Using Golang 
+# Distributed File Storage Using Golang 
 A Scalable, Decentralized, Fully distributed, Content addressable file storage system using Golang that can handle and stream very large files.
 
 ## Project Structure
